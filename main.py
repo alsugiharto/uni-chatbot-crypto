@@ -29,28 +29,63 @@ def template_crypto_price():
         template_crypto_price()
 
 
+def template_registration():
+    name = input("{}: What is your name ?\nYou: ".format(system_name))
+    api_key = input("{}: What is your api_key ?\nYou: ".format(system_name))
+    api_secret = input("{}: What is your api_secret ?\nYou: ".format(system_name))
+    api_pass = input("{}: What is your api_pass ?\nYou: ".format(system_name))
+    print(name)
+    print(api_key)
+    print(api_secret)
+    print(api_pass)
+
+    data = {}
+    data['API_KEY'] = api_key
+    data['API_SECRET'] = api_secret
+    data['API_PASS'] = api_pass
+    data['NAME'] = name
+
+    with open('user_account.json', 'w', encoding='utf-8') as outfile:
+        json.dump(data, outfile)
+
+    main_function()
+
+
 def template_would_you_like():
     option = input("{}: Would you like to 'trade', 'check price', 'check balance' or 'quit' ?\nYou: ".format(system_name))
-    if (str(option) == "trade"):
-        #TODO
-        print("you choose trading")
-    elif (str(option) == "check price"):
+    if ("trade" in str(option)):
+        gdax.set_order()
+    elif ("reregister" in str(option)):
+        template_registration()
+    elif ("check price" in str(option)):
         template_crypto_price()
-    elif (str(option) == "check balance"):
+    elif ("check balance" in str(option)):
+        #TODO total price in USD
         gdax.get_account_balance()
         template_would_you_like()
-    elif(str(option) == "quit"):
+    elif("quit" in str(option)):
         print_template("Thank you for using {}. Bye for now {}!".format(system_name,gdax.get_user_name()))
     else:
         print_template("Hmmm sorry {}, what do you mean??".format(gdax.get_user_name()))
         template_would_you_like()
 
 
-if __name__ == '__main__':
-    if(gdax.is_account_valid() == True):
-        print_template("Hi {}, welcome to {} The Crypto Currency Personal Assistant".format(gdax.get_user_name(), system_name))
+def main_function():
+    if (gdax.is_account_valid() == True):
+        print_template(
+            "Hi {}, welcome to {} The Crypto Currency Personal Assistant".format(gdax.get_user_name(), system_name))
         template_would_you_like()
 
     else:
-        #TODO
-        print_template("Hi there, welcome to {} The Crypto Currency Personal Assistant, please press enter to start registration")
+        # TODO
+        print_template(
+            "Hi there, welcome to {} The Crypto Currency Personal Assistant, please press enter to start registration")
+        template_registration()
+
+
+if __name__ == '__main__':
+    main_function()
+
+
+#TODO history
+#TODO simulation
