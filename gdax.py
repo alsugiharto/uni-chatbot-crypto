@@ -26,12 +26,21 @@ class CoinbaseExchangeAuth(AuthBase):
         return request
 
 
-def call_api_request(request):
-    with open('user_account.json') as json_data:
-        user_account = json.load(json_data)
-    api_url = 'https://api.gdax.com/'
-    auth = CoinbaseExchangeAuth(user_account['API_KEY'], user_account['API_SECRET'], user_account['API_PASS'])
-    return requests.get(api_url + request, auth=auth).json()
+def call_api_request(request, json_request=''):
+    try:
+        with open('user_account.json') as json_data:
+            user_account = json.load(json_data)
+        api_url = 'https://api.gdax.com/'
+        auth = CoinbaseExchangeAuth(user_account['API_KEY'], user_account['API_SECRET'], user_account['API_PASS'])
+        if json_request == '':
+            response = requests.get(api_url + request, auth=auth)
+            return response.json()
+        else:
+            response = requests.post(api_url + request, json=json_request, auth=auth)
+            print(response)
+            return response
+    except ValueError:
+        return False
 
 
 def get_user_name():
@@ -42,12 +51,14 @@ def get_user_name():
 
 def is_account_valid():
     valid_response = call_api_request('accounts')
-    try:
-        valid_response['message']
-    except TypeError:
-        return True
-    else:
+    if(valid_response == False):
         return False
+    else:
+        try:
+            valid_response['message']
+            return False
+        except TypeError:
+            return True
 
 
 def get_account_balance():
@@ -61,3 +72,17 @@ def get_account_balance():
             print("Hold: {}".format(currency_detail['hold']))
             print("Available: {}".format(currency_detail['available']))
             print("====")
+
+
+def set_order():
+    json_request = {
+        'size': 0.01,
+        'price': 1000,
+        'side': 'sell',
+        'product_id': 'ETH-USDC'
+    }
+    print(call_api_request('orders', json_request))
+
+
+def get_order():
+    print(call_api_request('orders'))
