@@ -1,16 +1,52 @@
 import json, gdax, cryptocompare, requests
 
-system_name = "Crypto15"
-template_menu = " or say 'menu' to return to menu\nYou: "
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
+def yellow_color(text):
+    return bcolors.WARNING + "{}".format(text) + bcolors.ENDC
+
+
+def blue_color(text):
+    return bcolors.OKBLUE + "{}".format(text) + bcolors.ENDC
+
+
+def green_color(text):
+    return bcolors.OKGREEN + "{}".format(text) + bcolors.ENDC
+
+
+def bold_color(text):
+    return bcolors.BOLD + "{}".format(text) + bcolors.ENDC
+
+
+system_name_no_color = "Crypto15"
+system_name = yellow_color(system_name_no_color)
 currency = 'EUR'
 
 
-def print_template(what_to_say):
-    print("{}: {}".format(system_name, what_to_say))
+def print_template(text):
+    print("{}: {}".format(system_name, text))
+
+
+def input_template(text):
+    if(gdax.is_account_valid()):
+        name = gdax.get_user_name()
+    else:
+        name = "You"
+    return input("{}: {} \n{}: ".format(system_name, text, blue_color(name)))
 
 
 def template_crypto_price():
-    crypto_name = input("{}: What crypto do you want to know?{}".format(system_name, template_menu))
+    crypto_name = input_template("What crypto do you want to know? or say 'menu' to return to menu")
     if (crypto_name == 'menu'):
         template_would_you_like()
     else:
@@ -23,10 +59,10 @@ def template_crypto_price():
 
 
 def template_trade():
-    name = input("{}: What is your name ?\nYou: ".format(system_name))
-    api_key = input("{}: What is your api_key ?\nYou: ".format(system_name))
-    api_secret = input("{}: What is your api_secret ?\nYou: ".format(system_name))
-    api_pass = input("{}: What is your api_pass ?\nYou: ".format(system_name))
+    name = input_template("What is your name?")
+    api_key = input_template("What is your API_KEY?")
+    api_secret = input_template("What is your API_SECRET?")
+    api_pass = input_template("What is your API_PASS?")
 
     data = {}
     data['API_KEY'] = api_key
@@ -37,13 +73,10 @@ def template_trade():
     with open('user_account.json', 'w', encoding='utf-8') as outfile:
         json.dump(data, outfile)
 
-    main_function()
-
 
 def template_account_balance():
-    # TODO total price in USD
     print("{}: Here is your balance details".format(system_name))
-    print("====")
+    print(green_color("===="))
     account_response = gdax.get_account_balance()
     for currency_detail in account_response:
         if (float(currency_detail['balance']) > 0 ):
@@ -51,16 +84,16 @@ def template_account_balance():
             print("Balance: {}".format(currency_detail['balance']))
             print("Hold: {}".format(currency_detail['hold']))
             print("Available: {}".format(currency_detail['available']))
-            print("====")
+            print(green_color("===="))
 
 
 def template_registration():
-    is_registration = input("{}: Do you want to start registration ?\nYou: ".format(system_name))
+    is_registration = input_template("Do you want to start registration?")
     if (is_registration == 'yes'):
-        name = input("{}: What is your name ?\nYou: ".format(system_name))
-        api_key = input("{}: What is your api_key ?\nYou: ".format(system_name))
-        api_secret = input("{}: What is your api_secret ?\nYou: ".format(system_name))
-        api_pass = input("{}: What is your api_pass ?\nYou: ".format(system_name))
+        name = input_template("What is your name?")
+        api_key = input_template("What is your API_KEY?")
+        api_secret = input_template("What is your API_SECRET?")
+        api_pass = input_template("What is your API_PASS?")
 
         data = {}
         data['API_KEY'] = api_key
@@ -76,17 +109,15 @@ def template_registration():
         else:
             print_template("Sorry, but you don't have a valid account details".format(gdax.get_user_name()))
 
-        main_function()
-    else:
-        main_function()
-
 
 def template_would_you_like():
-    option = input("{}: Would you like to 'trade', 'check price', 'check balance', 're-register' or 'quit' ?\nYou: ".format(system_name))
+    option = input_template("Would you like to 'trade', 'check price', 'check balance', 're-register' or 'quit' ?")
     if ("trade" in str(option)):
         gdax.set_order()
+        main_function()
     elif ("register" in str(option)):
         template_registration()
+        main_function()
     elif ("price" in str(option)):
         template_crypto_price()
     elif ("balance" in str(option)):
@@ -108,7 +139,7 @@ def main_function():
 
 if __name__ == '__main__':
     if (gdax.is_account_valid() == True):
-        print_template("Hi {}, welcome to {} The Crypto Currency Personal Assistant".format(gdax.get_user_name(), system_name))
+        print_template("Hi {}, welcome to {} The Crypto Currency Personal Assistant".format(gdax.get_user_name(), bold_color(system_name_no_color)))
     else:
         print_template("Hi there, welcome to {} The Crypto Currency Personal Assistant. You don't have a valid registered account details yet.".format(system_name))
     main_function()
