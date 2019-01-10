@@ -41,6 +41,8 @@ def call_api_request(request, json_request=''):
             return response
     except ValueError:
         return False
+    except FileNotFoundError:
+        return False
 
 
 def get_user_name():
@@ -62,16 +64,7 @@ def is_account_valid():
 
 
 def get_account_balance():
-    account_response = call_api_request('accounts')
-    print("{}: Here is your balance details".format(system_name))
-    print("====")
-    for currency_detail in account_response:
-        if (float(currency_detail['balance']) > 0 ):
-            print("Currency: {}".format(currency_detail['currency']))
-            print("Balance: {}".format(currency_detail['balance']))
-            print("Hold: {}".format(currency_detail['hold']))
-            print("Available: {}".format(currency_detail['available']))
-            print("====")
+    return call_api_request('accounts')
 
 
 def set_order():
