@@ -12,6 +12,16 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
+available_crypto = {
+    'BTC': 'bitcoin',
+    'BCH': 'bitcoin cash',
+    'ETH': 'ethereum',
+    'ETC': 'ethereum classic',
+    'ZRX': '0x',
+    'LTC': 'litecoin'
+}
+
+
 def yellow_color(text):
     return bcolors.WARNING + "{}".format(text) + bcolors.ENDC
 
@@ -46,8 +56,8 @@ def input_template(text):
 
 
 def template_crypto_price():
-    crypto_name = input_template("What crypto do you want to know? or say 'menu' to return to menu")
-    if (crypto_name == 'menu'):
+    crypto_name = input_template("What crypto (short name) do you want to know? or say 'menu' to return to menu")
+    if ("menu" in str(crypto_name)):
         template_would_you_like()
     else:
         response = cryptocompare.crypto_price(crypto_name)
@@ -59,19 +69,9 @@ def template_crypto_price():
 
 
 def template_trade():
-    name = input_template("What is your name?")
-    api_key = input_template("What is your API_KEY?")
-    api_secret = input_template("What is your API_SECRET?")
-    api_pass = input_template("What is your API_PASS?")
-
-    data = {}
-    data['API_KEY'] = api_key
-    data['API_SECRET'] = api_secret
-    data['API_PASS'] = api_pass
-    data['NAME'] = name
-
-    with open('user_account.json', 'w', encoding='utf-8') as outfile:
-        json.dump(data, outfile)
+    for symbol in available_crypto:
+        print_template("{} ({}) ".format(symbol, available_crypto[symbol]))
+    crypto = input_template("Please choose one of the above Crypto Currencies you would like to trade")
 
 
 def template_account_balance():
@@ -109,15 +109,16 @@ def template_registration():
         else:
             print_template("Sorry, but you don't have a valid account details".format(gdax.get_user_name()))
 
+    main_function()
+
 
 def template_would_you_like():
     option = input_template("Would you like to 'trade', 'check price', 'check balance', 're-register' or 'quit' ?")
     if ("trade" in str(option)):
-        gdax.set_order()
+        template_trade()
         main_function()
     elif ("register" in str(option)):
         template_registration()
-        main_function()
     elif ("price" in str(option)):
         template_crypto_price()
     elif ("balance" in str(option)):
@@ -134,12 +135,15 @@ def main_function():
     if (gdax.is_account_valid() == True):
         template_would_you_like()
     else:
-        template_registration()
+        option = input_template("You don't have a valid registered account details yet. choose 'register', otherwise quit")
+        if ("register" in str(option)):
+            template_registration()
 
 
 if __name__ == '__main__':
     if (gdax.is_account_valid() == True):
         print_template("Hi {}, welcome to {} The Crypto Currency Personal Assistant".format(gdax.get_user_name(), bold_color(system_name_no_color)))
+        template_would_you_like()
     else:
         print_template("Hi there, welcome to {} The Crypto Currency Personal Assistant. You don't have a valid registered account details yet.".format(system_name))
     main_function()

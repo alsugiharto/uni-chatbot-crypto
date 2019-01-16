@@ -38,7 +38,6 @@ def call_api_request(request, json_request=''):
             return response.json()
         else:
             response = requests.post(api_url + request, json=json_request, auth=auth)
-            print(response)
             return response
     except ValueError:
         return False
@@ -68,12 +67,12 @@ def get_account_balance():
     return call_api_request('accounts')
 
 
-def set_order():
+def set_order(crypto):
     json_request = {
         'size': 0.01,
         'price': 1000,
         'side': 'sell',
-        'product_id': 'ETH-USDC'
+        'product_id': '{}-EUR'.format(crypto)
     }
     print(call_api_request('orders', json_request))
 
