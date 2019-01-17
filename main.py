@@ -62,9 +62,9 @@ def template_crypto_price():
     else:
         response = cryptocompare.crypto_price(crypto_name)
         if(response != False):
-            print_template("I found your crypto price. {} is {} {} at the moment.".format(crypto_name, response[currency], currency))
+            print_template("I found your crypto price. {} is {} {} at the moment".format(crypto_name, response[currency], currency))
         else:
-            print_template("Never heard of {}.".format(crypto_name))
+            print_template("Never heard of {}".format(crypto_name))
         template_crypto_price()
 
 
@@ -91,6 +91,38 @@ def template_trade():
         available_crypto[crypto]
     except KeyError:
         print_template("Crypto {} is not one of the available crypto to trade".format(crypto))
+        template_trade()
+
+    # show current euro balance
+    account_response = gdax.get_account_balance()
+    for currency_detail in account_response:
+        if (currency_detail['currency'] == 'EUR'):
+            current_euro = currency_detail['available']
+            print_template("Your current balance is {} {}".format(current_euro, currency))
+
+    # show current crypto price
+    response = cryptocompare.crypto_price(crypto)
+    if (response != False):
+        print_template(
+            "Current price is {} {} / {} right now".format(response[currency], currency, crypto))
+
+    size = input_template("How much in {} would you like to trade to {}? The minimum order is 5 {}".format(currency, crypto, currency))
+
+    try:
+        float(current_euro)
+        float(size)
+    except ValueError:
+        print_template("Crypto {} is not one of the available crypto to trade".format(crypto))
+        template_trade()
+
+    # TODO do the correct minimum buying
+    if (float(size) < 5):
+        print_template(yellow_color("Your order is bellow the minimum, please try to make a valid order again"))
+        template_trade()
+
+    #check enough credit
+    if (float(size) > float(current_euro)):
+        print_template(yellow_color("Unfortunately you don't have enough credits, please try to make a valid order again"))
         template_trade()
 
     #analyzing for recommendation
@@ -160,19 +192,18 @@ def template_trade():
     print_template("{}..".format(conjunction))
     print_template("the price of {} is {} ({} %)".format(crypto, price_level, int(recommendation['price']*100)))
 
-    follow = input_template("Do you want to follow our recommendation? say 'buy' to {}follow otherwise to {}follow".format(recommendation_yes, recommendation_no))
+    follow = input_template("Do you want to follow our recommendation? say {} to {}follow, or 'no' to {}follow".format(yellow_color("'buy'"), recommendation_yes, recommendation_no))
 
     if ("buy" in str(follow)):
 
-        #TODO ask how much
-        
-
-        follow_confirmation = input_template("Are you sure to buy? 'yes' to execute your order or otherwise to cancel".format(follow))
+        follow_confirmation = input_template("Are you sure to buy {} {} of {}? {} to execute your order, or 'no' to cancel".format(size, currency, crypto, yellow_color("'yes'"), follow))
         if ("yes" in str(follow_confirmation)):
             #TODO buying
             print('buying')
             #TODO logging
             print('logging')
+            print_template("Congrats {}, your order has been executed".format(gdax.get_user_name()))
+            template_would_you_like()
         else:
             print_template(yellow_color('Your order has been cancelled'))
             template_trade()
@@ -253,10 +284,11 @@ if __name__ == '__main__':
         print_template("Hi {}, welcome to {} The Crypto Currency Personal Assistant".format(gdax.get_user_name(), bold_color(system_name_no_color)))
         template_would_you_like()
     else:
-        print_template("Hi there, welcome to {} The Crypto Currency Personal Assistant. You don't have a valid registered account details yet.".format(system_name))
+        print_template("Hi there, welcome to {} The Crypto Currency Personal Assistant. You don't have a valid registered account details yet".format(system_name))
     main_function()
 
 
 #TODO complete buying
 #TODO history
 #TODO simulation
+#TODO get the user name only once somewhere
