@@ -1,4 +1,4 @@
-import json, gdax, cryptocompare, requests
+import json, gdax, cryptocompare, requests, csv, pandas as pd
 
 
 class bcolors:
@@ -196,12 +196,19 @@ def template_trade():
 
     if ("buy" in str(follow)):
 
-        follow_confirmation = input_template("Are you sure to buy {} {} of {}? {} to execute your order, or 'no' to cancel".format(size, currency, crypto, yellow_color("'yes'"), follow))
+        follow_confirmation = input_template("Are you sure to {}follow our recommendation buying {} {} of {}? {} to execute your order, or 'no' to cancel".format(recommendation_yes, size, currency, crypto, yellow_color("'yes'"), follow))
         if ("yes" in str(follow_confirmation)):
             #TODO buying
-            print('buying')
-            #TODO logging
-            print('logging')
+            print_template("Thank you for {}following our recommendation to buy {} for {} {}".format(recommendation_yes, crypto, size, currency))
+            #buying should return price, id, time
+            price = 100
+            id = '123123123'
+            buying_time = '19-01-2019 14:12:20'
+            if (recommendation_yes == 'not '):
+                recommendation_bool = 0
+            else:
+                recommendation_bool = 1
+            logging(id, crypto, price, size, recommendation_bool, buying_time)
             print_template("Congrats {}, your order has been executed".format(gdax.get_user_name()))
             template_would_you_like()
         else:
@@ -212,9 +219,27 @@ def template_trade():
         template_trade()
 
 
+def logging(id, crypto, price, size, recommendation_yes, buying_time):
+    buffer = [[str(id), str(crypto), str(size), str(recommendation_yes), str(buying_time), str(price), '-', '-']]
+
+    for row_index, list in enumerate(buffer):
+        for column_index, string in enumerate(list):
+            buffer[row_index][column_index] = buffer[row_index][column_index].replace('\n', '')
+
+    with open('history.csv', 'a', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(buffer)
+
+
+def template_history():
+    print_template("Here is your history:")
+    history = pd.read_csv("history.csv")
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        print(history)
+
 
 def template_account_balance():
-    print("{}: Here is your balance details".format(system_name))
+    print_template("Here is your balance details:")
     print(yellow_color("===="))
     account_response = gdax.get_account_balance()
     for currency_detail in account_response:
@@ -252,19 +277,22 @@ def template_registration():
 
 
 def template_would_you_like():
-    option = input_template("Would you like to 'trade', 'check price', 'check balance', 're-register' or 'quit' ?")
-    if ("trade" in str(option)):
+    option = input_template("Would you like to 'trade', 'check price', 'check balance', 'history', 're-register' or 'quit' ?")
+    if ("price" in str(option)):
+        template_crypto_price()
+    elif ("history" in str(option)):
+        template_history()
+    elif ("balance" in str(option)):
+        template_account_balance()
+        template_would_you_like()
+    elif ("trade" in str(option)):
         template_trade()
         main_function()
     elif ("register" in str(option)):
         template_registration()
-    elif ("price" in str(option)):
-        template_crypto_price()
-    elif ("balance" in str(option)):
-        template_account_balance()
-        template_would_you_like()
     elif("quit" in str(option)):
         print_template("Thank you for using {}. Bye for now {}!".format(system_name,gdax.get_user_name()))
+        exit()
     else:
         print_template("Hmmm sorry {}, what do you mean??".format(gdax.get_user_name()))
         template_would_you_like()
@@ -288,7 +316,7 @@ if __name__ == '__main__':
     main_function()
 
 
+
 #TODO complete buying
-#TODO history
+#TODO update when the order is sold server
 #TODO simulation
-#TODO get the user name only once somewhere
