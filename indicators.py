@@ -4,24 +4,26 @@ import pandas as pd
 import talib
 import numpy as np
 
+def indicator(crypto):
+	df = get_dataframe(crypto)
+	rsi = get_rsi(df)
+	adx = get_adx(df)
+	
 
-url = "https://min-api.cryptocompare.com/data/histohour?fsym=BTC&tsym=EUR&limit=100&e=Coinbase" + "&api_key=" + api_key.API_KEY
-response = requests.get(url).json()
-df = pd.DataFrame(response["Data"])
+def get_dataframe(crypto):
+	url = "https://min-api.cryptocompare.com/data/histohour?fsym=" + crypto.upper() + "&tsym=EUR&limit=100&e=Coinbase" + "&api_key=" + api_key.API_KEY
+	response = requests.get(url).json()
+	return pd.DataFrame(response["Data"])
 
 # Relative Strength Index
-def rsi(df):
+def get_rsi(df):
 	rsi_lst = talib.RSI(df.close.values)
 	return round(rsi_lst[len(rsi_lst) - 1],2)
 
 # Average Directional Movement Index
-def adx(df):
+def get_adx(df):
 	adx_lst = talib.ADX(high=df.high.values, low=df.low.values, close=df.close.values, timeperiod=14)
 	return round(adx_lst[len(adx_lst) - 1],2)
-
-# Moving Average Converging Diverging
-def macd(df):
-	return talib.MACD(close=df.close.values, fastperiod=12, slowperiod=26, signalperiod=9)
 
 # converts the indicator to a number from a -1 to 1 interval
 def conv_rsi(indicator, buy=30, sell=70):
@@ -58,28 +60,28 @@ def interpretation(indicator, value):
 # print("ADX: " + str(adx(df)) + "\nConverted: " + str(conv_adx(adx(df))))	
 
 # Test Cases
-print("For 0 = buy and 100 = sell")
-r1 = round(np.random.random()*100, 0)
-print("RSI = " + str(r1) +", " + str(conv_rsi(r1, 0, 100)))
-r2 = round(np.random.random()*100, 0)
-print("RSI = " + str(r2) +", " + str(conv_rsi(r2, 0, 100)))
-r3 = round(np.random.random()*-100, 0)
-print("RSI = " + str(r3) +", " + str(conv_rsi(r3, 0, 100)))
-print("RSI = 30, " + str(conv_rsi(30, 0, 100)))
-print("RSI = 70, " + str(conv_rsi(70, 0, 100)))
+# print("For 0 = buy and 100 = sell")
+# r1 = round(np.random.random()*100, 0)
+# print("RSI = " + str(r1) +", " + str(conv_rsi(r1, 0, 100)))
+# r2 = round(np.random.random()*100, 0)
+# print("RSI = " + str(r2) +", " + str(conv_rsi(r2, 0, 100)))
+# r3 = round(np.random.random()*-100, 0)
+# print("RSI = " + str(r3) +", " + str(conv_rsi(r3, 0, 100)))
+# print("RSI = 30, " + str(conv_rsi(30, 0, 100)))
+# print("RSI = 70, " + str(conv_rsi(70, 0, 100)))
 
-print("\nFor 30 = buy and 70 = sell")
-print("RSI = " + str(r1) +", " + str(conv_rsi(r1)))
-print("RSI = " + str(r2) +", " + str(conv_rsi(r2)))
-print("RSI = " + str(r3) +", " + str(conv_rsi(r3)))
-print("RSI = 30, " + str(conv_rsi(30)))
-print("RSI = 70, " + str(conv_rsi(70)))
-# print("RSI = 100, " + str(conv_rsi(100, 0, 100)))
-# print("RSI = 0, " + str(conv_rsi(0, 0, 100)))
-print("\n")
-print("ADX = " + str(r1) + ", " + str(conv_adx(r1)))
-interpretation("adx", r1)
-print("ADX = " + str(r2) +", " + str(conv_adx(r2)))
-interpretation("adx", r2)
-print("ADX = " + str(r3) +", " + str(conv_adx(r3)))
-interpretation("adx", r3)
+# print("\nFor 30 = buy and 70 = sell")
+# print("RSI = " + str(r1) +", " + str(conv_rsi(r1)))
+# print("RSI = " + str(r2) +", " + str(conv_rsi(r2)))
+# print("RSI = " + str(r3) +", " + str(conv_rsi(r3)))
+# print("RSI = 30, " + str(conv_rsi(30)))
+# print("RSI = 70, " + str(conv_rsi(70)))
+# # print("RSI = 100, " + str(conv_rsi(100, 0, 100)))
+# # print("RSI = 0, " + str(conv_rsi(0, 0, 100)))
+# print("\n")
+# print("ADX = " + str(r1) + ", " + str(conv_adx(r1)))
+# interpretation("adx", r1)
+# print("ADX = " + str(r2) +", " + str(conv_adx(r2)))
+# interpretation("adx", r2)
+# print("ADX = " + str(r3) +", " + str(conv_adx(r3)))
+# interpretation("adx", r3)
