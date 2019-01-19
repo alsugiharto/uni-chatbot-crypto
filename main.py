@@ -41,6 +41,7 @@ def bold_color(text):
 system_name_no_color = "Crypto15"
 system_name = yellow_color(system_name_no_color)
 currency = 'EUR'
+min_order = 2
 
 
 def print_template(text):
@@ -103,27 +104,31 @@ def template_trade():
     # show current crypto price
     response = cryptocompare.crypto_price(crypto)
     if (response != False):
+        priceatm = response[currency]
         print_template(
             "Current price is {} {} / {} right now".format(response[currency], currency, crypto))
 
-    size = input_template("How much in {} would you like to trade to {}? The minimum order is 5 {}".format(currency, crypto, currency))
+    size = input_template("How much in {} would you like to trade to {}? The minimum order is {} {}".format(currency, crypto, min_order, currency))
 
     try:
-        float(current_euro)
-        float(size)
+        current_euro = float(current_euro)
+        size = float(size)
     except ValueError:
         print_template("Crypto {} is not one of the available crypto to trade".format(crypto))
         template_trade()
 
-    # TODO do the correct minimum buying
-    if (float(size) < 5):
+    #check minimum order
+    if (size <= min_order):
         print_template(yellow_color("Your order is bellow the minimum, please try to make a valid order again"))
         template_trade()
 
     #check enough credit
-    if (float(size) > float(current_euro)):
+    if (size > current_euro):
         print_template(yellow_color("Unfortunately you don't have enough credits, please try to make a valid order again"))
         template_trade()
+
+    #calculate size to buy
+    size_crypto_to_buy = round(size/priceatm, 8)
 
     #analyzing for recommendation
     recommendation = recommendation_main(crypto)
@@ -196,20 +201,28 @@ def template_trade():
 
     if ("buy" in str(follow)):
 
-        follow_confirmation = input_template("Are you sure to {}follow our recommendation buying {} {} of {}? {} to execute your order, or 'no' to cancel".format(recommendation_yes, size, currency, crypto, yellow_color("'yes'"), follow))
+        follow_confirmation = input_template("Are you sure to {}follow our recommendation buying {} {} worth {} {} with current price {} {}/{}? {} to execute your order, or 'no' to cancel".format(recommendation_yes, size_crypto_to_buy, crypto, size, currency, priceatm, currency, crypto, yellow_color("'yes'"), follow))
         if ("yes" in str(follow_confirmation)):
-            #TODO buying
-            print_template("Thank you for {}following our recommendation to buy {} for {} {}".format(recommendation_yes, crypto, size, currency))
-            #buying should return price, id, time
-            price = 100
+            #buy
+            print_template("Thank you for {}following our recommendation to buy {} {}".format(recommendation_yes, size_crypto_to_buy, crypto))
+            #return id and time
             id = '123123123'
             buying_time = '19-01-2019 14:12:20'
+
+            order_result = gdax.set_order(crypto, size_crypto_to_buy, priceatm, True)
+
+            # check if buying success
             if (recommendation_yes == 'not '):
                 recommendation_bool = 0
             else:
                 recommendation_bool = 1
-            logging(id, crypto, price, size, recommendation_bool, buying_time)
-            print_template("Congrats {}, your order has been executed".format(gdax.get_user_name()))
+
+            if (order_result == True):
+                # logging
+                logging(id, crypto, priceatm, size_crypto_to_buy, recommendation_bool, buying_time)
+                print_template("Congrats {}, your order has been executed".format(gdax.get_user_name()))
+            else:
+                print_template("Your order is failed due to {}".format(order_result))
             template_would_you_like()
         else:
             print_template(yellow_color('Your order has been cancelled'))
@@ -314,7 +327,6 @@ if __name__ == '__main__':
     else:
         print_template("Hi there, welcome to {} The Crypto Currency Personal Assistant. You don't have a valid registered account details yet".format(system_name))
     main_function()
-
 
 
 #TODO complete buying

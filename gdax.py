@@ -66,16 +66,30 @@ def is_account_valid():
 def get_account_balance():
     return call_api_request('accounts')
 
-
-def set_order(crypto):
+def set_order(crypto, size, price, is_buy):
+    if (is_buy):
+        buy_sell = 'buy'
+    else:
+        buy_sell = 'sell'
     json_request = {
-        'size': 0.01,
-        'price': 1000,
-        'side': 'sell',
+        'size': size,
+        'price': price,
+        'side': buy_sell,
         'product_id': '{}-EUR'.format(crypto)
     }
-    print(call_api_request('orders', json_request))
+    response = call_api_request('orders', json_request)
+    try:
+        return response.json()['message']
+    except KeyError:
+        return True
 
 
 def get_order():
     print(call_api_request('orders'))
+
+def products_min_order():
+    products = call_api_request('products')
+    for product in products:
+        if ("EUR" in str(product['id'])):
+            print('===')
+            print("{}: {}".format(product['id'], product['base_min_size']))
