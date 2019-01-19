@@ -1,4 +1,4 @@
-import json, gdax, cryptocompare, requests, csv, pandas as pd
+import json, gdax, cryptocompare, requests, csv, pandas as pd, datetime
 
 
 class bcolors:
@@ -78,7 +78,10 @@ def recommendation_main(crypto):
     return recommendation
 
 
-def template_trade():
+def template_sell():
+    print('template sell')
+
+def template_buy():
     for symbol in available_crypto:
         print_template("{} ({}) ".format(symbol, available_crypto[symbol]))
     crypto = input_template("Please choose one of the above Crypto Currencies you'd like to trade or 'menu' to go back to main menu").upper()
@@ -92,7 +95,7 @@ def template_trade():
         available_crypto[crypto]
     except KeyError:
         print_template("Crypto {} is not one of the available crypto to trade".format(crypto))
-        template_trade()
+        template_buy()
 
     # show current euro balance
     account_response = gdax.get_account_balance()
@@ -115,17 +118,17 @@ def template_trade():
         size = float(size)
     except ValueError:
         print_template("Crypto {} is not one of the available crypto to trade".format(crypto))
-        template_trade()
+        template_buy()
 
     #check minimum order
     if (size <= min_order):
         print_template(yellow_color("Your order is bellow the minimum, please try to make a valid order again"))
-        template_trade()
+        template_buy()
 
     #check enough credit
     if (size > current_euro):
         print_template(yellow_color("Unfortunately you don't have enough credits, please try to make a valid order again"))
-        template_trade()
+        template_buy()
 
     #calculate size to buy
     size_crypto_to_buy = round(size/priceatm, 8)
@@ -205,10 +208,6 @@ def template_trade():
         if ("yes" in str(follow_confirmation)):
             #buy
             print_template("Thank you for {}following our recommendation to buy {} {}".format(recommendation_yes, size_crypto_to_buy, crypto))
-            #return id and time
-            id = '123123123'
-            buying_time = '19-01-2019 14:12:20'
-
             order_result = gdax.set_order(crypto, size_crypto_to_buy, priceatm, True)
 
             # check if buying success
@@ -219,36 +218,48 @@ def template_trade():
 
             if (order_result == True):
                 # logging
-                logging(id, crypto, priceatm, size_crypto_to_buy, recommendation_bool, buying_time)
+                logging(True, crypto, priceatm, size_crypto_to_buy, size, recommendation_bool)
                 print_template("Congrats {}, your order has been executed".format(gdax.get_user_name()))
             else:
                 print_template("Your order is failed due to {}".format(order_result))
             template_would_you_like()
         else:
             print_template(yellow_color('Your order has been cancelled'))
-            template_trade()
+            template_buy()
     else:
         print_template(yellow_color('Your order has been cancelled'))
-        template_trade()
+        template_buy()
 
 
-def logging(id, crypto, price, size, recommendation_yes, buying_time):
-    buffer = [[str(id), str(crypto), str(size), str(recommendation_yes), str(buying_time), str(price), '-', '-']]
+def logging(is_buy, crypto, price, size, fiat_size, recommendation_yes):
+    now = datetime.datetime.now()
+    buffer = [[str(crypto), str(size), str(fiat_size), str(recommendation_yes), str(now), str(price)]]
 
     for row_index, list in enumerate(buffer):
         for column_index, string in enumerate(list):
             buffer[row_index][column_index] = buffer[row_index][column_index].replace('\n', '')
 
-    with open('history.csv', 'a', newline='') as f:
+    if (is_buy):
+        filename = 'history_buy.csv'
+    else:
+        filename = 'history_sell.csv'
+
+    with open(filename, 'a', newline='') as f:
         writer = csv.writer(f)
         writer.writerows(buffer)
 
 
 def template_history():
-    print_template("Here is your history:")
-    history = pd.read_csv("history.csv")
+    print_template("Here is your buying history:")
+    buy_history = pd.read_csv("history_buy.csv")
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-        print(history)
+        print(buy_history)
+
+    print_template("Here is your selling history:")
+    sell_history = pd.read_csv("history_sell.csv")
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        print(sell_history)
+    template_would_you_like()
 
 
 def template_account_balance():
@@ -290,7 +301,7 @@ def template_registration():
 
 
 def template_would_you_like():
-    option = input_template("Would you like to 'trade', 'check price', 'check balance', 'history', 're-register' or 'quit' ?")
+    option = input_template("Would you like to 'buy', 'sell', 'check price', 'check balance', 'history', 're-register' or 'quit' ?")
     if ("price" in str(option)):
         template_crypto_price()
     elif ("history" in str(option)):
@@ -298,8 +309,11 @@ def template_would_you_like():
     elif ("balance" in str(option)):
         template_account_balance()
         template_would_you_like()
-    elif ("trade" in str(option)):
-        template_trade()
+    elif ("buy" in str(option)):
+        template_buy()
+        main_function()
+    elif ("sell" in str(option)):
+        template_sell()
         main_function()
     elif ("register" in str(option)):
         template_registration()
@@ -328,7 +342,5 @@ if __name__ == '__main__':
         print_template("Hi there, welcome to {} The Crypto Currency Personal Assistant. You don't have a valid registered account details yet".format(system_name))
     main_function()
 
-
-#TODO complete buying
 #TODO update when the order is sold server
 #TODO simulation

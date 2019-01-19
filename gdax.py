@@ -73,7 +73,7 @@ def set_order(crypto, size, price, is_buy):
         buy_sell = 'sell'
     json_request = {
         'size': size,
-        'price': price,
+        'type': 'market',
         'side': buy_sell,
         'product_id': '{}-EUR'.format(crypto)
     }
