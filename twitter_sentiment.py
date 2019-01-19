@@ -15,7 +15,7 @@ class TwitterSearch:
 
 		api = tweepy.API(auth)
 
-		public_tweets = api.search(query, lang  = "en")
+		public_tweets = api.search(query, lang="en")
 
 		tweet_count = 0
 		sentiment_sum = 0
@@ -42,5 +42,3 @@ class TwitterSearch:
 			sentiment = round(sentiment_sum / tweet_count, 4)
 		return sentiment
 	
-# ts = TwitterSearch()
-# ts.search_tweet("btc")
