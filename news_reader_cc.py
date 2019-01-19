@@ -15,7 +15,9 @@ df = pd.DataFrame(response["Data"])
 
 today = datetime.datetime.now().date() #.strftime("%Y-%m-%d")
 yesterday = today - datetime.timedelta(days=1)
+last_week = today - datetime.timedelta(days=7)
 y_in_unix = (datetime.datetime.combine(yesterday, datetime.datetime.min.time()) - datetime.datetime(1970,1,1)).total_seconds()
+w_in_unix = (datetime.datetime.combine(yesterday, datetime.datetime.min.time()) - datetime.datetime(1970,1,1)).total_seconds()
 
 # Produce a list containing news objects that are
 	# published yesterday or today AND
@@ -23,12 +25,13 @@ y_in_unix = (datetime.datetime.combine(yesterday, datetime.datetime.min.time()) 
 query = ["btc", "bitcoin"]
 result = []
 for obj in df.values:
-	for q in queries:
-		if obj[7] >= y_in_unix and (q in (obj[0].lower() or obj[1].lower())):
+	for q in query:
+		if obj[7] >= w_in_unix and (q in (obj[0].lower() or obj[1].lower())):
 			result.append(obj)
 sentiment = 0
 for article in result:
 	sentiment += TextBlob(article[0]).sentiment.polarity
-print("There are " + str(len(result)) + " articles found for the query: " + query)
+sentiment = round(sentiment, 2)
+print("There are " + str(len(result)) + " articles found for the query: " + str(query))
 print("The total sentiment is: " + str(sentiment))
 print("The average sentiment is: " + str(round(sentiment / len(result), 2)))
