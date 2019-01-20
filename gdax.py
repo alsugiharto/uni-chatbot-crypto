@@ -49,7 +49,9 @@ def call_api_request(request, json_request='', delete = False):
 
 
 def remove_orders():
-    return call_api_request('orders', '', True)
+    open_orders = call_api_request('orders', '')
+    for open_order in open_orders:
+        call_api_request('orders/{}'.format(open_order['id']), '', True)
 
 
 def get_user_name():
@@ -92,6 +94,28 @@ def set_order(crypto, size, is_buy):
     except KeyError:
         return True
 
+
+# market order
+def set_stop_order(crypto, size, is_buy, stop_price, limit):
+    if (is_buy):
+        buy_sell = 'buy'
+    else:
+        buy_sell = 'sell'
+
+    json_request = {
+        'type': 'limit',
+        'product_id': '{}-EUR'.format(crypto),
+        'size': size,
+        'price': limit,
+        'stop_price': stop_price,
+        'stop': 'loss',
+        'side': buy_sell
+    }
+    response = call_api_request('orders', json_request)
+    try:
+        return response.json()['message']
+    except KeyError:
+        return True
 
 def get_order():
     print(call_api_request('orders'))

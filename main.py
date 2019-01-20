@@ -111,17 +111,21 @@ def template_sell():
     if (response != False):
         priceatm = response[currency]
 
-    follow_confirmation = input_template("are you sure to sell {} of {} with the current price {} {}/{}?".format(balance, crypto, priceatm, crypto, currency))
+    follow_confirmation = input_template("are you sure to sell {} of {} with the current price {} {}/{}? say 'yes' or 'no' ".format(balance, crypto, priceatm, crypto, currency))
 
     if ("yes" in str(follow_confirmation)):
         # TODO remove only specific crypto
-        gdax.remove_orders()
+        #TODO check if success
+        remove_order_result = gdax.remove_orders()
         #sell the crypto
-        gdax.set_order(crypto, balance, False)
-        #logging
-        fiat_size = float(priceatm)*balance
-        logging(False, crypto, priceatm, balance, fiat_size)
-        print_template("Congrats {}, you just sold them all!".format(gdax.get_user_name()))
+        order_result = gdax.set_order(crypto, balance, False)
+        if (order_result == True):
+            #logging
+            fiat_size = float(priceatm)*balance
+            logging(False, crypto, priceatm, balance, fiat_size)
+            print_template("Congrats {}, you just sold them all!".format(gdax.get_user_name()))
+
+    template_would_you_like()
 
 
 def template_buy():
@@ -262,6 +266,9 @@ def template_buy():
             if (order_result == True):
                 # logging
                 logging(True, crypto, priceatm, size_crypto_to_buy, size, recommendation_bool)
+                #get the lower price for stop price
+                stop_price = round(priceatm * 95 / 100, 2)
+                gdax.set_stop_order(crypto, size_crypto_to_buy, False, stop_price, stop_price)
                 print_template("Congrats {}, your order has been executed".format(gdax.get_user_name()))
             else:
                 print_template("Your order is failed due to {}".format(order_result))
