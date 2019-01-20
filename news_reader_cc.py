@@ -1,10 +1,6 @@
-import datetime
-import requests
-import pandas as pd
-import talib
+import datetime, requests, talib, api_key, pandas as pd
 import numpy as np
 from textblob import TextBlob
-import api_key
 
 # Describes the sentiment of their tite and body of 34 different news sources 
 # i.e. CryptoGlobe, Coindesk, CoinTelegraph, CryptoInsider
@@ -36,7 +32,7 @@ def get_news_sentiment(crypto, days_ago=1):
 	response = requests.get(url).json()
 	df = pd.DataFrame(response["Data"])
 
-	today = datetime.datetime.now().date() #.strftime("%Y-%m-%d")
+	today = datetime.datetime.now().date()
 	d = today - datetime.timedelta(days=days_ago)
 	d_in_unix = (datetime.datetime.combine(d, datetime.datetime.min.time()) - datetime.datetime(1970,1,1)).total_seconds()
 
@@ -51,12 +47,8 @@ def get_news_sentiment(crypto, days_ago=1):
 	sentiment = 0
 	for article in result:
 		sentiment += TextBlob(article[0]).sentiment.polarity
-	sentiment = round(sentiment, 2)
-	# print("There are " + str(len(result)) + " articles found for the query: " + str(query))
-	# print("The total sentiment is: " + str(sentiment))
 	if len(result) == 0:
 		average = 0;
 	else:
-		average = round(sentiment / len(result), 2)	
-	# print("The average sentiment is: " + str(average))
+		average = sentiment / len(result)
 	return average

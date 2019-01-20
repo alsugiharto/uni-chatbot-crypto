@@ -70,14 +70,15 @@ def template_crypto_price():
 
 
 def recommendation_main(crypto):
-    #TODO process crypto
     recommendation = {}
-    recommendation['main'] = -0.7
-    news_weight = 0.33
+    article_weight = 0.33
     twitter_weight = 0.67
-    recommendation['news'] = news_weight * cc.get_news_sentiment(crypto) + twitter_weight * tc.get_tweet_sentiment(crypto)
+    recommendation['news'] = article_weight * cc.get_news_sentiment(crypto) + twitter_weight * tc.get_tweet_sentiment(crypto)
     df = indicators.get_dataframe(crypto)
     recommendation['price'] = 0.5 * indicators.get_rsi(df) + 0.5 * indicators.get_macd(df)
+    news_weight = 0.3
+    technical_weight = 0.7
+    recommendation['main'] = news_weight * recommendation['news'] + technical_weight * recommendation['price']
     return recommendation
 
 
@@ -196,17 +197,17 @@ def template_buy():
     print_template("because currently...")
 
     if recommendation['price'] >= 0.6:
-        price_level = 'super low'
-    elif recommendation['price'] >= 0.3:
-        price_level = 'quite low'
-    elif recommendation['price'] >= 0:
-        price_level = 'a lil low'
-    elif recommendation['price'] <= -0.6:
         price_level = 'damn high'
-    elif recommendation['price'] <= -0.3:
+    elif recommendation['price'] >= 0.3:
         price_level = 'quite high'
-    elif recommendation['price'] < 0:
+    elif recommendation['price'] >= 0:
         price_level = 'a lil high'
+    elif recommendation['price'] <= -0.6:
+        price_level = 'super low'
+    elif recommendation['price'] <= -0.3:
+        price_level = 'quite low'
+    elif recommendation['price'] < 0:
+        price_level = 'a lil low'
 
 
     if recommendation['news'] >= 0.6:
@@ -226,7 +227,7 @@ def template_buy():
         #recommendation
         recommendation_yes = ''
         recommendation_no = 'not '
-        #choose conjuction
+        #choose conjunction
         if (recommendation['price'] >= 0 and recommendation['news'] >= 0):
             conjunction = 'and'
         elif (recommendation['price'] < 0 and recommendation['news'] >= 0):
@@ -237,7 +238,7 @@ def template_buy():
         #recommendation
         recommendation_yes = 'not '
         recommendation_no = ''
-        # choose conjuction
+        # choose conjunction
         if (recommendation['price'] < 0 and recommendation['news'] < 0):
             conjunction = 'and'
         elif (recommendation['price'] < 0 and recommendation['news'] >= 0):
@@ -403,3 +404,12 @@ if __name__ == '__main__':
 #TODO simulation
 #TODO give recommendation when to sell, if not allow to buy
 #TODO logging only when success
+
+#test_cases recommendation_main
+
+# for crypto in ["BTC", "BCH", "ETH", "ETC", "ZRX", "LTC"]:
+#     reco = recommendation_main(crypto)
+#     print(crypto)
+#     print("Price: " + str(reco["price"]))
+#     print("News: " + str(reco["news"]))
+#     print("Main: " + str(reco["main"]) + "\n")

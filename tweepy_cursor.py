@@ -1,8 +1,5 @@
-import tweepy
-import json
-import tweepy_credentials
+import tweepy, json, tweepy_credentials, datetime
 from textblob import TextBlob
-import datetime
 from time import sleep
 
 def get_tweets(crypto):
@@ -21,24 +18,24 @@ def get_tweets(crypto):
 	i=1
 
 	# Arrays with i=0 the query and i=1 the filename
-	btc = ["btc OR bitcoin", "btc"]
-	bth = ["bth OR bitcoin cash", "bth"]
-	eth = ["ethereum OR eth", "eth"]
-	etc = ["ethereum classic OR etc", "etc"]
-	zrx = ["0x OR zrx", "zrx"]
-	ltc = ["litecoin OR ltc", "ltc"]
+	btc = ["btc OR bitcoin", "BTC"]
+	bth = ["bth OR bitcoin cash", "BTH"]
+	eth = ["ethereum OR eth", "ETH"]
+	etc = ["ethereum classic OR etc", "ETC"]
+	zrx = ["0x OR zrx", "ZRX"]
+	ltc = ["litecoin OR ltc", "LTC"]
 
-	if crypto == "btc":
+	if crypto == "BTC":
 		query = btc
-	elif crypto == "bth":
+	elif crypto == "BTH":
 		query = bth
-	elif crypto == "eth":
+	elif crypto == "ETH":
 		query = eth
-	elif crypto == "etc":
+	elif crypto == "ETC":
 		query = etc
-	elif crypto == "zrx":
+	elif crypto == "ZRX":
 		query = zrx
-	elif crypto == "ltc":
+	elif crypto == "LTC":
 		query = ltc
 	else:
 		query = btc
@@ -63,9 +60,9 @@ def get_tweets(crypto):
 				})
 				print(str(i) + " tweets")
 				i += 1
-			print("Query: " + str(query[0]) + " completed.")
+			# print("Query: " + str(query[0]) + " completed.")
 			json.dump(tweets_json, f, sort_keys=True, default=str, indent=2)
-			print(datetime.datetime.now() - now)
+			# print(datetime.datetime.now() - now)
 		except tweepy.TweepError:
 			time.sleep(60*15)
 		except StopIteration:
@@ -81,11 +78,7 @@ def get_tweet_sentiment(crypto):
 			query_hits += 1
 			query_sentiment_sum += float(tweet["Sentiment"])
 	if query_hits == 0:
-		result = 0;print("\n0 hits for the given query")
+		result = 0; #print("\n0 hits for the given query")
 	else:
 		result = round(query_sentiment_sum / query_hits, 4)
 	return result
-
-crypto = "ltc"
-get_tweets(crypto)
-print(get_tweet_sentiment(crypto))
