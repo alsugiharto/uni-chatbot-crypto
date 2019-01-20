@@ -1,4 +1,4 @@
-import json, gdax, cryptocompare, requests, csv, pandas as pd, datetime
+import json, gdax, cryptocompare, requests, csv, pandas as pd, datetime, tweepy_cursor as tc, news_reader_cc as cc, indicators
 
 
 class bcolors:
@@ -73,8 +73,11 @@ def recommendation_main(crypto):
     #TODO process crypto
     recommendation = {}
     recommendation['main'] = -0.7
-    recommendation['news'] = -0.8
-    recommendation['price'] = 0.2
+    news_weight = 0.33
+    twitter_weight = 0.67
+    recommendation['news'] = news_weight * cc.get_news_sentiment(crypto) + twitter_weight * tc.get_tweet_sentiment(crypto)
+    df = indicators.get_dataframe(crypto)
+    recommendation['price'] = 0.5 * indicators.get_rsi(df) + 0.5 * indicators.get_macd(df)
     return recommendation
 
 

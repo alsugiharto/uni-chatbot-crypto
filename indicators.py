@@ -8,7 +8,7 @@ def indicator(crypto):
 	df = get_dataframe(crypto)
 	rsi = get_rsi(df)
 	adx = get_adx(df)
-	
+
 
 def get_dataframe(crypto):
 	url = "https://min-api.cryptocompare.com/data/histohour?fsym=" + crypto.upper() + "&tsym=EUR&limit=100&e=Coinbase" + "&api_key=" + api_key.API_KEY
@@ -18,12 +18,36 @@ def get_dataframe(crypto):
 # Relative Strength Index
 def get_rsi(df):
 	rsi_lst = talib.RSI(df.close.values)
-	return round(rsi_lst[len(rsi_lst) - 1],2)
+	rsi = round(rsi_lst[len(rsi_lst) - 1],2)
+	result = ((rsi - 50) / (30 - 50))
+	if result > 1: result = 1
+	elif result < -1: result = -1
+	if buy > sell: result = -1 * result
+	return round(result, 4)
 
 # Average Directional Movement Index
 def get_adx(df):
 	adx_lst = talib.ADX(high=df.high.values, low=df.low.values, close=df.close.values, timeperiod=14)
 	return round(adx_lst[len(adx_lst) - 1],2)
+
+def get_macd(df):
+	data = talib.MACD(df.close.values)
+	macd_list = data[0]
+	signal = data[1]
+	hist = data[2]
+	print(hist)
+	hist1 = round(hist[len(hist) - 1], 4)
+	hist0 = round(hist[len(hist) - 2], 4)
+	pos_trend =  hist0 < hist1:
+	if hist1 > -0.1 and hist1 < 0 and pos_trend:
+		result = 1
+	elif hist1 < 0.1 and hist1 > 0 and not pos_trend:
+		result = -1
+	elif not pos_trend:
+		result = -0.5
+	else:
+		result = 0
+	return result
 
 # converts the indicator to a number from a -1 to 1 interval
 def conv_rsi(indicator, buy=30, sell=70):
@@ -85,3 +109,7 @@ def interpretation(indicator, value):
 # interpretation("adx", r2)
 # print("ADX = " + str(r3) +", " + str(conv_adx(r3)))
 # interpretation("adx", r3)
+
+dataframe = get_dataframe("eth")
+# print(dataframe)
+get_macd(dataframe)

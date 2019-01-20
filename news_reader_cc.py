@@ -60,5 +60,3 @@ def get_news_sentiment(crypto, days_ago=1):
 		average = round(sentiment / len(result), 2)	
 	# print("The average sentiment is: " + str(average))
 	return average
-
-get_news_sentiment("zrx", 7)
