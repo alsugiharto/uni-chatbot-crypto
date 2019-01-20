@@ -79,7 +79,50 @@ def recommendation_main(crypto):
 
 
 def template_sell():
-    print('template sell')
+    account_response = gdax.get_account_balance()
+    print(yellow_color("===="))
+    crypto_to_sell = []
+    for currency_detail in account_response:
+        if (float(currency_detail['balance']) > 0 and currency_detail['currency'] != 'EUR'):
+            crypto_to_sell.append(currency_detail['currency'])
+            print("Currency: {}".format(currency_detail['currency']))
+            print("Balance: {}".format(currency_detail['balance']))
+            print(yellow_color("===="))
+    crypto = input_template(
+        "Please choose one of the above Crypto Currencies you'd like to sell. you can only sell all of its balance. or 'menu' to go back to main menu").upper()
+
+    #choosing menu
+    if ("MENU" in str(crypto)):
+        template_would_you_like()
+
+    #check valid crypto
+    if (crypto not in crypto_to_sell):
+        print_template("invalid crypto to sell")
+        template_sell()
+    #if valid then get the balance
+    else:
+        account_response = gdax.get_account_balance()
+        for currency_detail in account_response:
+            if (currency_detail['currency'] == crypto):
+                balance = round(float(currency_detail['balance']), 8)
+
+    # show current crypto price
+    response = cryptocompare.crypto_price(crypto)
+    if (response != False):
+        priceatm = response[currency]
+
+    follow_confirmation = input_template("are you sure to sell {} of {} with the current price {} {}/{}?".format(balance, crypto, priceatm, crypto, currency))
+
+    if ("yes" in str(follow_confirmation)):
+        # TODO remove only specific crypto
+        gdax.remove_orders()
+        #sell the crypto
+        gdax.set_order(crypto, balance, False)
+        #logging
+        fiat_size = float(priceatm)*balance
+        logging(False, crypto, priceatm, balance, fiat_size)
+        print_template("Congrats {}, you just sold them all!".format(gdax.get_user_name()))
+
 
 def template_buy():
     for symbol in available_crypto:
@@ -208,7 +251,7 @@ def template_buy():
         if ("yes" in str(follow_confirmation)):
             #buy
             print_template("Thank you for {}following our recommendation to buy {} {}".format(recommendation_yes, size_crypto_to_buy, crypto))
-            order_result = gdax.set_order(crypto, size_crypto_to_buy, priceatm, True)
+            order_result = gdax.set_order(crypto, size_crypto_to_buy, True)
 
             # check if buying success
             if (recommendation_yes == 'not '):
@@ -231,9 +274,12 @@ def template_buy():
         template_buy()
 
 
-def logging(is_buy, crypto, price, size, fiat_size, recommendation_yes):
+def logging(is_buy, crypto, price, size, fiat_size, recommendation_yes=''):
     now = datetime.datetime.now()
-    buffer = [[str(crypto), str(size), str(fiat_size), str(recommendation_yes), str(now), str(price)]]
+    if (is_buy):
+        buffer = [[str(crypto), str(size), str(fiat_size), str(recommendation_yes), str(now), str(price)]]
+    else:
+        buffer = [[str(crypto), str(size), str(fiat_size), str(now), str(price)]]
 
     for row_index, list in enumerate(buffer):
         for column_index, string in enumerate(list):
@@ -344,3 +390,5 @@ if __name__ == '__main__':
 
 #TODO update when the order is sold server
 #TODO simulation
+#TODO give recommendation when to sell, if not allow to buy
+#TODO logging only when success

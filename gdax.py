@@ -27,13 +27,16 @@ class CoinbaseExchangeAuth(AuthBase):
         return request
 
 
-def call_api_request(request, json_request=''):
+def call_api_request(request, json_request='', delete = False):
     try:
         with open('user_account.json') as json_data:
             user_account = json.load(json_data)
         api_url = 'https://api.gdax.com/'
         auth = CoinbaseExchangeAuth(user_account['API_KEY'], user_account['API_SECRET'], user_account['API_PASS'])
-        if json_request == '':
+        if (delete == True):
+            response = requests.delete(api_url + request, auth=auth)
+            return response.json()
+        elif json_request == '':
             response = requests.get(api_url + request, auth=auth)
             return response.json()
         else:
@@ -43,6 +46,10 @@ def call_api_request(request, json_request=''):
         return False
     except FileNotFoundError:
         return False
+
+
+def remove_orders():
+    return call_api_request('orders', '', True)
 
 
 def get_user_name():
@@ -66,7 +73,9 @@ def is_account_valid():
 def get_account_balance():
     return call_api_request('accounts')
 
-def set_order(crypto, size, price, is_buy):
+
+# market order
+def set_order(crypto, size, is_buy):
     if (is_buy):
         buy_sell = 'buy'
     else:
