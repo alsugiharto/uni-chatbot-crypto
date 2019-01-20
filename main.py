@@ -251,6 +251,7 @@ def template_buy():
 
     if ("buy" in str(follow)):
 
+        print_template('Please note that any order will have 5% Stop Loss')
         follow_confirmation = input_template("Are you sure to {}follow our recommendation buying {} {} worth {} {} with current price {} {}/{}? {} to execute your order, or 'no' to cancel".format(recommendation_yes, size_crypto_to_buy, crypto, size, currency, priceatm, currency, crypto, yellow_color("'yes'"), follow))
         if ("yes" in str(follow_confirmation)):
             #buy
