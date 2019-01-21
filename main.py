@@ -197,17 +197,17 @@ def template_buy():
     print_template("because currently...")
 
     if recommendation['price'] >= 0.6:
-        price_level = 'damn high'
-    elif recommendation['price'] >= 0.3:
-        price_level = 'quite high'
-    elif recommendation['price'] >= 0:
-        price_level = 'a lil high'
-    elif recommendation['price'] <= -0.6:
         price_level = 'super low'
-    elif recommendation['price'] <= -0.3:
+    elif recommendation['price'] >= 0.3:
         price_level = 'quite low'
-    elif recommendation['price'] < 0:
+    elif recommendation['price'] >= 0:
         price_level = 'a lil low'
+    elif recommendation['price'] <= -0.6:
+        price_level = 'damn high'
+    elif recommendation['price'] <= -0.3:
+        price_level = 'quite high'
+    elif recommendation['price'] < 0:
+        price_level = 'a lil high'
 
 
     if recommendation['news'] >= 0.6:
