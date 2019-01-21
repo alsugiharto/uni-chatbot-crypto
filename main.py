@@ -75,7 +75,7 @@ def recommendation_main(crypto):
     twitter_weight = 0.67
     recommendation['news'] = article_weight * cc.get_news_sentiment(crypto) + twitter_weight * tc.get_tweet_sentiment(crypto)
     df = indicators.get_dataframe(crypto)
-    recommendation['price'] = 0.5 * indicators.get_rsi(df) + 0.5 * indicators.get_macd(df)
+    recommendation['price'] = (0.5 * indicators.get_rsi(df) + 0.5 * indicators.get_macd(df)) * -1 #reverse
     news_weight = 0.3
     technical_weight = 0.7
     recommendation['main'] = news_weight * recommendation['news'] + technical_weight * recommendation['price']
